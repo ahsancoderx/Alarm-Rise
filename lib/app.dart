@@ -10,7 +10,7 @@ class RiseQuestApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'RiseQuest',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       routerConfig: appRouter,
     );
   }
