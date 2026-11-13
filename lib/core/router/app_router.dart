@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import '../widgets/app_shell.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/alarms/screens/alarm_list_screen.dart';
+import '../../features/alarms/screens/alarm_ring_screen.dart';
 import '../../features/routine/screens/routine_screen.dart';
 import '../../features/rewards/screens/rewards_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
@@ -9,6 +10,11 @@ import '../../features/profile/screens/profile_screen.dart';
 final appRouter = GoRouter(
   initialLocation: '/home',
   routes: [
+    GoRoute(
+      path: '/ring/:id',
+      builder: (c, s) =>
+          AlarmRingScreen(alarmId: int.parse(s.pathParameters['id']!)),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => AppShell(shell: shell),
       branches: [
