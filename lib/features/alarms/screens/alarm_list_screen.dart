@@ -1,5 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/alarm.dart';
 import '../providers/alarms_provider.dart';
@@ -11,7 +13,9 @@ class AlarmListScreen extends ConsumerWidget {
 
   void _openEditor(BuildContext context, Alarm alarm) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AlarmEditScreen(alarm: alarm)),
+      MaterialPageRoute(
+        builder: (_) => AlarmEditScreen(alarm: alarm),
+      ),
     );
   }
 
@@ -23,7 +27,9 @@ class AlarmListScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Alarms')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const CategoryPickerScreen()),
+          MaterialPageRoute(
+            builder: (_) => const CategoryPickerScreen(),
+          ),
         ),
         icon: const Icon(Icons.add_rounded),
         label: const Text('New alarm'),
@@ -33,9 +39,11 @@ class AlarmListScreen extends ConsumerWidget {
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
               itemCount: alarms.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) =>
+                  const SizedBox(height: 12),
               itemBuilder: (context, i) {
                 final alarm = alarms[i];
+
                 return Dismissible(
                   key: ValueKey(alarm.id),
                   direction: DismissDirection.endToStart,
@@ -46,16 +54,26 @@ class AlarmListScreen extends ConsumerWidget {
                       color: Colors.red.shade400,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child:
-                        const Icon(Icons.delete_rounded, color: Colors.white),
+                    child: const Icon(
+                      Icons.delete_rounded,
+                      color: Colors.white,
+                    ),
                   ),
-                  onDismissed: (_) =>
-                      ref.read(alarmsProvider.notifier).remove(alarm.id),
+                  onDismissed: (_) => ref
+                      .read(alarmsProvider.notifier)
+                      .remove(alarm.id),
                   child: _AlarmCard(
                     alarm: alarm,
                     onTap: () => _openEditor(context, alarm),
-                    onToggle: () =>
-                        ref.read(alarmsProvider.notifier).toggle(alarm.id),
+
+                    // Long press to test alarm mission
+                    onLongPress: () {
+                      context.go('/ring/${alarm.id}');
+                    },
+
+                    onToggle: () => ref
+                        .read(alarmsProvider.notifier)
+                        .toggle(alarm.id),
                   ),
                 );
               },
@@ -67,21 +85,25 @@ class AlarmListScreen extends ConsumerWidget {
 class _AlarmCard extends StatelessWidget {
   final Alarm alarm;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
   final VoidCallback onToggle;
 
   const _AlarmCard({
     required this.alarm,
     required this.onTap,
+    required this.onLongPress,
     required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
     final dim = !alarm.enabled;
+
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
           child: Row(
@@ -127,12 +149,17 @@ class _AlarmCard extends StatelessWidget {
                         alarm.category.title,
                         if (alarm.label.isNotEmpty) alarm.label,
                       ].join('  •  '),
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Switch(value: alarm.enabled, onChanged: (_) => onToggle()),
+              Switch(
+                value: alarm.enabled,
+                onChanged: (_) => onToggle(),
+              ),
             ],
           ),
         ),
@@ -152,7 +179,11 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.alarm_add_rounded, size: 72, color: AppColors.orange),
+            Icon(
+              Icons.alarm_add_rounded,
+              size: 72,
+              color: AppColors.orange,
+            ),
             SizedBox(height: 16),
             Text(
               'No alarms yet',
@@ -166,7 +197,9 @@ class _EmptyState extends StatelessWidget {
             Text(
               'Tap "New alarm" to create your first mission alarm.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

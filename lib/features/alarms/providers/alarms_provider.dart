@@ -21,6 +21,8 @@ Alarm alarmFromRow(AlarmRow r) {
     vibrate: r.vibrate,
     label: r.label,
     enabled: r.enabled,
+    referencePhoto: r.referencePhoto,
+    referenceLabels: r.referenceLabels,
   );
 }
 
@@ -61,6 +63,8 @@ class AlarmsNotifier extends Notifier<List<Alarm>> {
       vibrate: Value(a.vibrate),
       label: Value(a.label),
       enabled: Value(a.enabled),
+       referencePhoto: Value(a.referencePhoto),
+      referenceLabels: Value(a.referenceLabels),
     ));
   }
 

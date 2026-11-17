@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../data/models/alarm.dart';
 import '../../../data/models/alarm_category.dart';
 import '../providers/alarms_provider.dart';
+import '../widgets/reference_photo_picker.dart';
 
 class AlarmEditScreen extends ConsumerStatefulWidget {
   final Alarm? alarm;
@@ -24,6 +25,8 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
   late String _tone;
   late bool _vibrate;
   late TextEditingController _label;
+  String _refPhoto = '';
+  String _refLabels = '';
 
   bool get _isEdit => widget.alarm != null;
 
@@ -39,6 +42,8 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
     _tone = a?.tone ?? alarmTones.first;
     _vibrate = a?.vibrate ?? true;
     _label = TextEditingController(text: a?.label ?? '');
+    _refPhoto = a?.referencePhoto ?? '';
+    _refLabels = a?.referenceLabels ?? '';
   }
 
   @override
@@ -81,7 +86,13 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
     if (picked != null) setState(() => _tone = picked);
   }
 
-  void _save() {
+    void _save() {
+    if (_category == AlarmCategory.room && _refPhoto.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Take a reference photo of your spot first')),
+      );
+      return;
+    }
     final notifier = ref.read(alarmsProvider.notifier);
     notifier.save(Alarm(
       id: widget.alarm?.id ?? notifier.nextId(),
@@ -93,10 +104,11 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
       vibrate: _vibrate,
       label: _label.text.trim(),
       enabled: widget.alarm?.enabled ?? true,
+      referencePhoto: _refPhoto,
+      referenceLabels: _refLabels,
     ));
     Navigator.of(context).pop();
   }
-
   @override
   Widget build(BuildContext context) {
     final preview = Alarm(id: 0, hour: _time.hour, minute: _time.minute);
@@ -208,6 +220,17 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
             Alarm(id: 0, hour: 0, minute: 0, days: _days).repeatText,
             style: const TextStyle(color: AppColors.textSecondary),
           ),
+                    if (_category == AlarmCategory.room) ...[
+            const SizedBox(height: 24),
+            const _SectionTitle('Reference spot'),
+            ReferencePhotoPicker(
+              path: _refPhoto,
+              onPicked: (path, labels) => setState(() {
+                _refPhoto = path;
+                _refLabels = labels;
+              }),
+            ),
+          ],
 
           // Tone and vibration
           const SizedBox(height: 24),

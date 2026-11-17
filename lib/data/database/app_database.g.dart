@@ -110,6 +110,30 @@ class $AlarmsTableTable extends AlarmsTable
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _referencePhotoMeta = const VerificationMeta(
+    'referencePhoto',
+  );
+  @override
+  late final GeneratedColumn<String> referencePhoto = GeneratedColumn<String>(
+    'reference_photo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _referenceLabelsMeta = const VerificationMeta(
+    'referenceLabels',
+  );
+  @override
+  late final GeneratedColumn<String> referenceLabels = GeneratedColumn<String>(
+    'reference_labels',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -121,6 +145,8 @@ class $AlarmsTableTable extends AlarmsTable
     vibrate,
     label,
     enabled,
+    referencePhoto,
+    referenceLabels,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -193,6 +219,24 @@ class $AlarmsTableTable extends AlarmsTable
         enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
       );
     }
+    if (data.containsKey('reference_photo')) {
+      context.handle(
+        _referencePhotoMeta,
+        referencePhoto.isAcceptableOrUnknown(
+          data['reference_photo']!,
+          _referencePhotoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reference_labels')) {
+      context.handle(
+        _referenceLabelsMeta,
+        referenceLabels.isAcceptableOrUnknown(
+          data['reference_labels']!,
+          _referenceLabelsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -238,6 +282,14 @@ class $AlarmsTableTable extends AlarmsTable
         DriftSqlType.bool,
         data['${effectivePrefix}enabled'],
       )!,
+      referencePhoto: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference_photo'],
+      )!,
+      referenceLabels: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference_labels'],
+      )!,
     );
   }
 
@@ -257,6 +309,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
   final bool vibrate;
   final String label;
   final bool enabled;
+  final String referencePhoto;
+  final String referenceLabels;
   const AlarmRow({
     required this.id,
     required this.hour,
@@ -267,6 +321,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
     required this.vibrate,
     required this.label,
     required this.enabled,
+    required this.referencePhoto,
+    required this.referenceLabels,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -280,6 +336,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
     map['vibrate'] = Variable<bool>(vibrate);
     map['label'] = Variable<String>(label);
     map['enabled'] = Variable<bool>(enabled);
+    map['reference_photo'] = Variable<String>(referencePhoto);
+    map['reference_labels'] = Variable<String>(referenceLabels);
     return map;
   }
 
@@ -294,6 +352,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
       vibrate: Value(vibrate),
       label: Value(label),
       enabled: Value(enabled),
+      referencePhoto: Value(referencePhoto),
+      referenceLabels: Value(referenceLabels),
     );
   }
 
@@ -312,6 +372,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
       vibrate: serializer.fromJson<bool>(json['vibrate']),
       label: serializer.fromJson<String>(json['label']),
       enabled: serializer.fromJson<bool>(json['enabled']),
+      referencePhoto: serializer.fromJson<String>(json['referencePhoto']),
+      referenceLabels: serializer.fromJson<String>(json['referenceLabels']),
     );
   }
   @override
@@ -327,6 +389,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
       'vibrate': serializer.toJson<bool>(vibrate),
       'label': serializer.toJson<String>(label),
       'enabled': serializer.toJson<bool>(enabled),
+      'referencePhoto': serializer.toJson<String>(referencePhoto),
+      'referenceLabels': serializer.toJson<String>(referenceLabels),
     };
   }
 
@@ -340,6 +404,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
     bool? vibrate,
     String? label,
     bool? enabled,
+    String? referencePhoto,
+    String? referenceLabels,
   }) => AlarmRow(
     id: id ?? this.id,
     hour: hour ?? this.hour,
@@ -350,6 +416,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
     vibrate: vibrate ?? this.vibrate,
     label: label ?? this.label,
     enabled: enabled ?? this.enabled,
+    referencePhoto: referencePhoto ?? this.referencePhoto,
+    referenceLabels: referenceLabels ?? this.referenceLabels,
   );
   AlarmRow copyWithCompanion(AlarmsTableCompanion data) {
     return AlarmRow(
@@ -362,6 +430,12 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
       vibrate: data.vibrate.present ? data.vibrate.value : this.vibrate,
       label: data.label.present ? data.label.value : this.label,
       enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      referencePhoto: data.referencePhoto.present
+          ? data.referencePhoto.value
+          : this.referencePhoto,
+      referenceLabels: data.referenceLabels.present
+          ? data.referenceLabels.value
+          : this.referenceLabels,
     );
   }
 
@@ -376,7 +450,9 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
           ..write('tone: $tone, ')
           ..write('vibrate: $vibrate, ')
           ..write('label: $label, ')
-          ..write('enabled: $enabled')
+          ..write('enabled: $enabled, ')
+          ..write('referencePhoto: $referencePhoto, ')
+          ..write('referenceLabels: $referenceLabels')
           ..write(')'))
         .toString();
   }
@@ -392,6 +468,8 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
     vibrate,
     label,
     enabled,
+    referencePhoto,
+    referenceLabels,
   );
   @override
   bool operator ==(Object other) =>
@@ -405,7 +483,9 @@ class AlarmRow extends DataClass implements Insertable<AlarmRow> {
           other.tone == this.tone &&
           other.vibrate == this.vibrate &&
           other.label == this.label &&
-          other.enabled == this.enabled);
+          other.enabled == this.enabled &&
+          other.referencePhoto == this.referencePhoto &&
+          other.referenceLabels == this.referenceLabels);
 }
 
 class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
@@ -418,6 +498,8 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
   final Value<bool> vibrate;
   final Value<String> label;
   final Value<bool> enabled;
+  final Value<String> referencePhoto;
+  final Value<String> referenceLabels;
   const AlarmsTableCompanion({
     this.id = const Value.absent(),
     this.hour = const Value.absent(),
@@ -428,6 +510,8 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
     this.vibrate = const Value.absent(),
     this.label = const Value.absent(),
     this.enabled = const Value.absent(),
+    this.referencePhoto = const Value.absent(),
+    this.referenceLabels = const Value.absent(),
   });
   AlarmsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -439,6 +523,8 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
     this.vibrate = const Value.absent(),
     this.label = const Value.absent(),
     this.enabled = const Value.absent(),
+    this.referencePhoto = const Value.absent(),
+    this.referenceLabels = const Value.absent(),
   }) : hour = Value(hour),
        minute = Value(minute),
        category = Value(category),
@@ -453,6 +539,8 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
     Expression<bool>? vibrate,
     Expression<String>? label,
     Expression<bool>? enabled,
+    Expression<String>? referencePhoto,
+    Expression<String>? referenceLabels,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -464,6 +552,8 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
       if (vibrate != null) 'vibrate': vibrate,
       if (label != null) 'label': label,
       if (enabled != null) 'enabled': enabled,
+      if (referencePhoto != null) 'reference_photo': referencePhoto,
+      if (referenceLabels != null) 'reference_labels': referenceLabels,
     });
   }
 
@@ -477,6 +567,8 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
     Value<bool>? vibrate,
     Value<String>? label,
     Value<bool>? enabled,
+    Value<String>? referencePhoto,
+    Value<String>? referenceLabels,
   }) {
     return AlarmsTableCompanion(
       id: id ?? this.id,
@@ -488,6 +580,8 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
       vibrate: vibrate ?? this.vibrate,
       label: label ?? this.label,
       enabled: enabled ?? this.enabled,
+      referencePhoto: referencePhoto ?? this.referencePhoto,
+      referenceLabels: referenceLabels ?? this.referenceLabels,
     );
   }
 
@@ -521,6 +615,12 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
     if (enabled.present) {
       map['enabled'] = Variable<bool>(enabled.value);
     }
+    if (referencePhoto.present) {
+      map['reference_photo'] = Variable<String>(referencePhoto.value);
+    }
+    if (referenceLabels.present) {
+      map['reference_labels'] = Variable<String>(referenceLabels.value);
+    }
     return map;
   }
 
@@ -535,7 +635,9 @@ class AlarmsTableCompanion extends UpdateCompanion<AlarmRow> {
           ..write('tone: $tone, ')
           ..write('vibrate: $vibrate, ')
           ..write('label: $label, ')
-          ..write('enabled: $enabled')
+          ..write('enabled: $enabled, ')
+          ..write('referencePhoto: $referencePhoto, ')
+          ..write('referenceLabels: $referenceLabels')
           ..write(')'))
         .toString();
   }
@@ -563,6 +665,8 @@ typedef $$AlarmsTableTableCreateCompanionBuilder =
       Value<bool> vibrate,
       Value<String> label,
       Value<bool> enabled,
+      Value<String> referencePhoto,
+      Value<String> referenceLabels,
     });
 typedef $$AlarmsTableTableUpdateCompanionBuilder =
     AlarmsTableCompanion Function({
@@ -575,6 +679,8 @@ typedef $$AlarmsTableTableUpdateCompanionBuilder =
       Value<bool> vibrate,
       Value<String> label,
       Value<bool> enabled,
+      Value<String> referencePhoto,
+      Value<String> referenceLabels,
     });
 
 class $$AlarmsTableTableFilterComposer
@@ -628,6 +734,16 @@ class $$AlarmsTableTableFilterComposer
 
   ColumnFilters<bool> get enabled => $composableBuilder(
     column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get referencePhoto => $composableBuilder(
+    column: $table.referencePhoto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get referenceLabels => $composableBuilder(
+    column: $table.referenceLabels,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -685,6 +801,16 @@ class $$AlarmsTableTableOrderingComposer
     column: $table.enabled,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get referencePhoto => $composableBuilder(
+    column: $table.referencePhoto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get referenceLabels => $composableBuilder(
+    column: $table.referenceLabels,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$AlarmsTableTableAnnotationComposer
@@ -722,6 +848,16 @@ class $$AlarmsTableTableAnnotationComposer
 
   GeneratedColumn<bool> get enabled =>
       $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<String> get referencePhoto => $composableBuilder(
+    column: $table.referencePhoto,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get referenceLabels => $composableBuilder(
+    column: $table.referenceLabels,
+    builder: (column) => column,
+  );
 }
 
 class $$AlarmsTableTableTableManager
@@ -764,6 +900,8 @@ class $$AlarmsTableTableTableManager
                 Value<bool> vibrate = const Value.absent(),
                 Value<String> label = const Value.absent(),
                 Value<bool> enabled = const Value.absent(),
+                Value<String> referencePhoto = const Value.absent(),
+                Value<String> referenceLabels = const Value.absent(),
               }) => AlarmsTableCompanion(
                 id: id,
                 hour: hour,
@@ -774,6 +912,8 @@ class $$AlarmsTableTableTableManager
                 vibrate: vibrate,
                 label: label,
                 enabled: enabled,
+                referencePhoto: referencePhoto,
+                referenceLabels: referenceLabels,
               ),
           createCompanionCallback:
               ({
@@ -786,6 +926,8 @@ class $$AlarmsTableTableTableManager
                 Value<bool> vibrate = const Value.absent(),
                 Value<String> label = const Value.absent(),
                 Value<bool> enabled = const Value.absent(),
+                Value<String> referencePhoto = const Value.absent(),
+                Value<String> referenceLabels = const Value.absent(),
               }) => AlarmsTableCompanion.insert(
                 id: id,
                 hour: hour,
@@ -796,6 +938,8 @@ class $$AlarmsTableTableTableManager
                 vibrate: vibrate,
                 label: label,
                 enabled: enabled,
+                referencePhoto: referencePhoto,
+                referenceLabels: referenceLabels,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -9,7 +9,8 @@ import '../../../data/models/alarm.dart';
 import '../../../data/models/alarm_category.dart';
 import '../../missions/math_mission.dart';
 import '../providers/alarms_provider.dart';
-
+import '../../../core/services/photo_service.dart';
+import '../../missions/photo_mission.dart';
 class AlarmRingScreen extends ConsumerStatefulWidget {
   final int alarmId;
   const AlarmRingScreen({super.key, required this.alarmId});
@@ -49,6 +50,29 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
       await AlarmScheduler.schedule(a);
     }
     appRouter.go('/home');
+  }
+    Widget _buildMission(Alarm a) {
+    switch (a.category) {
+      case AlarmCategory.math:
+        return MathMission(onSolved: _complete);
+      case AlarmCategory.sky:
+        return PhotoMission(
+          icon: Icons.wb_sunny_rounded,
+          instruction: 'Take a clear photo of the sky. Step outside or go to an open window.',
+          verify: PhotoService.verifySky,
+          onSolved: _complete,
+        );
+      case AlarmCategory.room:
+        return PhotoMission(
+          icon: Icons.meeting_room_rounded,
+          instruction: 'Walk to your spot and take a photo of it.',
+          referencePath: a.referencePhoto,
+          verify: (path) => PhotoService.verifyRoom(a.referenceLabels, path),
+          onSolved: _complete,
+        );
+      default:
+        return _SimpleDismiss(onDismiss: _complete);
+    }
   }
 
   @override
@@ -99,9 +123,7 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
                       const SizedBox(height: 28),
                       Expanded(
                         child: SingleChildScrollView(
-                          child: a.category == AlarmCategory.math
-                              ? MathMission(onSolved: _complete)
-                              : _SimpleDismiss(onDismiss: _complete),
+                          child: _buildMission(a),
                         ),
                       ),
                     ],

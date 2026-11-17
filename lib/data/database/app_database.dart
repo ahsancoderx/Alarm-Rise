@@ -17,6 +17,8 @@ class AlarmsTable extends Table {
   BoolColumn get vibrate => boolean().withDefault(const Constant(true))();
   TextColumn get label => text().withDefault(const Constant(''))();
   BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  TextColumn get referencePhoto => text().withDefault(const Constant(''))();
+  TextColumn get referenceLabels => text().withDefault(const Constant(''))();
 }
 
 @DriftDatabase(tables: [AlarmsTable])
@@ -24,8 +26,24 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'risequest'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
+  @override
+MigrationStrategy get migration => MigrationStrategy(
+  onUpgrade: (m, from, to) async {
+    if (from < 2) {
+      await m.addColumn(
+        alarmsTable,
+        alarmsTable.referencePhoto,
+      );
+
+      await m.addColumn(
+        alarmsTable,
+        alarmsTable.referenceLabels,
+      );
+    }
+  },
+);
   Stream<List<AlarmRow>> watchAlarms() {
     final query = select(alarmsTable)
       ..orderBy([
@@ -34,6 +52,9 @@ class AppDatabase extends _$AppDatabase {
       ]);
     return query.watch();
   }
+
+  Future<AlarmRow?> getAlarm(int id) =>
+      (select(alarmsTable)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<void> upsertAlarm(AlarmsTableCompanion alarm) =>
       into(alarmsTable).insertOnConflictUpdate(alarm);
@@ -44,7 +65,4 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteAlarm(int id) =>
       (delete(alarmsTable)..where((t) => t.id.equals(id))).go();
-
-  Future<AlarmRow?> getAlarm(int id) =>
-      (select(alarmsTable)..where((t) => t.id.equals(id))).getSingleOrNull();
 }

@@ -10,6 +10,8 @@ class Alarm {
   final bool vibrate;
   final String label;
   final bool enabled;
+  final String referencePhoto; // Room Photo ke liye
+  final String referenceLabels; // "Sink|Tap|Bathroom"
 
   const Alarm({
     required this.id,
@@ -21,6 +23,8 @@ class Alarm {
     this.vibrate = true,
     this.label = '',
     this.enabled = true,
+    this.referencePhoto = '',
+    this.referenceLabels = '',
   });
 
   Alarm copyWith({bool? enabled}) {
@@ -34,6 +38,8 @@ class Alarm {
       vibrate: vibrate,
       label: label,
       enabled: enabled ?? this.enabled,
+      referencePhoto: referencePhoto,
+      referenceLabels: referenceLabels,
     );
   }
 
