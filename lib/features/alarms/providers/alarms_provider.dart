@@ -23,6 +23,8 @@ Alarm alarmFromRow(AlarmRow r) {
     enabled: r.enabled,
     referencePhoto: r.referencePhoto,
     referenceLabels: r.referenceLabels,
+    exercise: r.exercise,
+    reps: r.reps,
   );
 }
 
@@ -63,8 +65,10 @@ class AlarmsNotifier extends Notifier<List<Alarm>> {
       vibrate: Value(a.vibrate),
       label: Value(a.label),
       enabled: Value(a.enabled),
-       referencePhoto: Value(a.referencePhoto),
+      referencePhoto: Value(a.referencePhoto),
       referenceLabels: Value(a.referenceLabels),
+      exercise: Value(a.exercise),
+      reps: Value(a.reps),
     ));
   }
 

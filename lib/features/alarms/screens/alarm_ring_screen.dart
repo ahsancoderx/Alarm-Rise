@@ -11,6 +11,7 @@ import '../../missions/math_mission.dart';
 import '../providers/alarms_provider.dart';
 import '../../../core/services/photo_service.dart';
 import '../../missions/photo_mission.dart';
+import '../../missions/fitness/workout_mission.dart';
 class AlarmRingScreen extends ConsumerStatefulWidget {
   final int alarmId;
   const AlarmRingScreen({super.key, required this.alarmId});
@@ -68,6 +69,12 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
           instruction: 'Walk to your spot and take a photo of it.',
           referencePath: a.referencePhoto,
           verify: (path) => PhotoService.verifyRoom(a.referenceLabels, path),
+          onSolved: _complete,
+        );
+              case AlarmCategory.fitness:
+        return WorkoutMission(
+          exercise: a.workout,
+          reps: a.reps,
           onSolved: _complete,
         );
       default:

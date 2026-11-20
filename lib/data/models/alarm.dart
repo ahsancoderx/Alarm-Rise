@@ -1,4 +1,5 @@
 import 'alarm_category.dart';
+import 'fitness_exercise.dart';
 
 class Alarm {
   final int id;
@@ -10,8 +11,10 @@ class Alarm {
   final bool vibrate;
   final String label;
   final bool enabled;
-  final String referencePhoto; // Room Photo ke liye
-  final String referenceLabels; // "Sink|Tap|Bathroom"
+  final String referencePhoto;
+  final String referenceLabels;
+  final String exercise; // FitnessExercise.name
+  final int reps;
 
   const Alarm({
     required this.id,
@@ -25,6 +28,8 @@ class Alarm {
     this.enabled = true,
     this.referencePhoto = '',
     this.referenceLabels = '',
+    this.exercise = '',
+    this.reps = 10,
   });
 
   Alarm copyWith({bool? enabled}) {
@@ -40,8 +45,20 @@ class Alarm {
       enabled: enabled ?? this.enabled,
       referencePhoto: referencePhoto,
       referenceLabels: referenceLabels,
+      exercise: exercise,
+      reps: reps,
     );
   }
+
+  FitnessExercise get workout => FitnessExercise.values.firstWhere(
+        (e) => e.name == exercise,
+        orElse: () => FitnessExercise.squats,
+      );
+
+  /// List aur cards mein dikhane ke liye ("Squats ×10" ya category ka naam).
+  String get missionText => category == AlarmCategory.fitness
+      ? '${workout.title} ×$reps'
+      : category.title;
 
   String get timeText {
     final h = hour % 12 == 0 ? 12 : hour % 12;

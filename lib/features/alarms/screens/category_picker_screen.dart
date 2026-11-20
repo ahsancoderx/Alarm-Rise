@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/alarm_category.dart';
 import 'alarm_edit_screen.dart';
+import 'exercise_picker_screen.dart';
 
 class CategoryPickerScreen extends StatelessWidget {
   const CategoryPickerScreen({super.key});
@@ -27,10 +28,12 @@ class CategoryPickerScreen extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
               onTap: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (_) => AlarmEditScreen(category: c),
-                ),
-              ),
+  MaterialPageRoute(
+    builder: (_) => c == AlarmCategory.fitness
+        ? const ExercisePickerScreen()
+        : AlarmEditScreen(category: c),
+  ),
+),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

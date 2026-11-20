@@ -19,6 +19,8 @@ class AlarmsTable extends Table {
   BoolColumn get enabled => boolean().withDefault(const Constant(true))();
   TextColumn get referencePhoto => text().withDefault(const Constant(''))();
   TextColumn get referenceLabels => text().withDefault(const Constant(''))();
+  TextColumn get exercise => text().withDefault(const Constant(''))();
+  IntColumn get reps => integer().withDefault(const Constant(10))();
 }
 
 @DriftDatabase(tables: [AlarmsTable])
@@ -26,24 +28,30 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'risequest'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
-MigrationStrategy get migration => MigrationStrategy(
-  onUpgrade: (m, from, to) async {
-    if (from < 2) {
-      await m.addColumn(
-        alarmsTable,
-        alarmsTable.referencePhoto,
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await customStatement(
+              "ALTER TABLE alarms ADD COLUMN reference_photo TEXT NOT NULL DEFAULT ''",
+            );
+            await customStatement(
+              "ALTER TABLE alarms ADD COLUMN reference_labels TEXT NOT NULL DEFAULT ''",
+            );
+          }
+          if (from < 3) {
+            await customStatement(
+              "ALTER TABLE alarms ADD COLUMN exercise TEXT NOT NULL DEFAULT ''",
+            );
+            await customStatement(
+              "ALTER TABLE alarms ADD COLUMN reps INTEGER NOT NULL DEFAULT 10",
+            );
+          }
+        },
       );
 
-      await m.addColumn(
-        alarmsTable,
-        alarmsTable.referenceLabels,
-      );
-    }
-  },
-);
   Stream<List<AlarmRow>> watchAlarms() {
     final query = select(alarmsTable)
       ..orderBy([

@@ -146,7 +146,7 @@ class _AlarmCard extends StatelessWidget {
                     Text(
                       [
                         alarm.repeatText,
-                        alarm.category.title,
+                        alarm.missionText,
                         if (alarm.label.isNotEmpty) alarm.label,
                       ].join('  •  '),
                       style: const TextStyle(

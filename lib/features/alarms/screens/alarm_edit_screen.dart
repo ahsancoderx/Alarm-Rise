@@ -5,12 +5,15 @@ import '../../../data/models/alarm.dart';
 import '../../../data/models/alarm_category.dart';
 import '../providers/alarms_provider.dart';
 import '../widgets/reference_photo_picker.dart';
+import '../../../data/models/fitness_exercise.dart';
+import '../widgets/workout_picker.dart';
 
 class AlarmEditScreen extends ConsumerStatefulWidget {
-  final Alarm? alarm;
+    final Alarm? alarm;
   final AlarmCategory? category;
+  final FitnessExercise? exercise;
 
-  const AlarmEditScreen({super.key, this.alarm, this.category});
+  const AlarmEditScreen({super.key, this.alarm, this.category, this.exercise});
 
   @override
   ConsumerState<AlarmEditScreen> createState() => _AlarmEditScreenState();
@@ -27,6 +30,8 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
   late TextEditingController _label;
   String _refPhoto = '';
   String _refLabels = '';
+  FitnessExercise _exercise = FitnessExercise.squats;
+  int _reps = 10;
 
   bool get _isEdit => widget.alarm != null;
 
@@ -44,6 +49,8 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
     _label = TextEditingController(text: a?.label ?? '');
     _refPhoto = a?.referencePhoto ?? '';
     _refLabels = a?.referenceLabels ?? '';
+        _exercise = a?.workout ?? widget.exercise ?? FitnessExercise.squats;
+    _reps = a?.reps ?? _exercise.defaultReps;
   }
 
   @override
@@ -106,6 +113,8 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
       enabled: widget.alarm?.enabled ?? true,
       referencePhoto: _refPhoto,
       referenceLabels: _refLabels,
+      exercise: _exercise.name,
+      reps: _reps,
     ));
     Navigator.of(context).pop();
   }
@@ -231,7 +240,16 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
               }),
             ),
           ],
-
+            if (_category == AlarmCategory.fitness) ...[
+            const SizedBox(height: 24),
+            const _SectionTitle('Workout'),
+            WorkoutPicker(
+              exercise: _exercise,
+              reps: _reps,
+              onExercise: (e) => setState(() => _exercise = e),
+              onReps: (r) => setState(() => _reps = r),
+            ),
+          ],
           // Tone and vibration
           const SizedBox(height: 24),
           const _SectionTitle('Sound'),
