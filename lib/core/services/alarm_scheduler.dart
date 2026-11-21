@@ -1,9 +1,8 @@
 import 'package:alarm/alarm.dart' as plugin;
 import '../../data/models/alarm.dart';
+import 'tone_catalog.dart';
 
 class AlarmScheduler {
-  static const tonePath = 'assets/tones/alarm.mp3';
-
   static Future<void> init() => plugin.Alarm.init();
 
   /// Agla waqt jab ye alarm bajna chahiye (system time se).
@@ -22,23 +21,31 @@ class AlarmScheduler {
     if (when == null) return;
 
     final title = a.label.isNotEmpty ? a.label : a.category.title;
+    final audio = await ToneCatalog.resolve(a.tone);
 
     await plugin.Alarm.set(
       alarmSettings: plugin.AlarmSettings(
         id: a.id,
         dateTime: when,
-        assetAudioPath: tonePath,
+        assetAudioPath: audio,
         loopAudio: true,
         vibrate: a.vibrate,
-        warningNotificationOnKill: true,
         androidFullScreenIntent: true,
+        // App recents se swipe karne par bhi alarm chalta rahe
+        androidStopAlarmOnTermination: false,
+        // "App band hui" wali warning ab zaroori nahi
+        warningNotificationOnKill: false,
+        // false: user mute kar sake, aur hamari mute button kaam kare
         volumeSettings: plugin.VolumeSettings.fixed(
           volume: 1.0,
-          volumeEnforced: true,
+          volumeEnforced: false,
         ),
         notificationSettings: plugin.NotificationSettings(
           title: title,
-          body: 'Time to wake up! Open RiseQuest to stop the alarm.',
+          body: 'Complete your mission to stop the alarm.',
+          // Swipe karne par alarm band nahi hoga, notification wapas aa jayegi
+          androidStopAlarmOnDismiss: false,
+          // Notification mein Stop button nahi
         ),
       ),
     );

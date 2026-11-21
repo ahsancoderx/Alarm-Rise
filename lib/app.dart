@@ -14,32 +14,46 @@ class RiseQuestApp extends ConsumerStatefulWidget {
   ConsumerState<RiseQuestApp> createState() => _RiseQuestAppState();
 }
 
-class _RiseQuestAppState extends ConsumerState<RiseQuestApp> {
+class _RiseQuestAppState extends ConsumerState<RiseQuestApp>
+    with WidgetsBindingObserver {
   StreamSubscription? _sub;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     ref.read(alarmsProvider); // database sync shuru
     _setup();
   }
 
   Future<void> _setup() async {
-    // Alarm bajte hi ring screen kholo
-    _sub = plugin.Alarm.ringing.listen((set) {
-  for (final s in set.alarms) {
-    _openRing(s.id);
-  }
-});
-
+        _sub = plugin.Alarm.ringing.listen((set) {
+      if (set.alarms.isNotEmpty) _openRing(set.alarms.first.id);
+    });
+    await _checkRinging();
     await Permission.notification.request();
     await Permission.scheduleExactAlarm.request();
+  }
+
+  Future<void> _checkRinging() async {
+    for (final s in await plugin.Alarm.getAlarms()) {
+      if (await plugin.Alarm.isRinging(s.id)) {
+        _openRing(s.id);
+        break;
+      }
+    }
   }
 
   void _openRing(int id) => appRouter.go('/ring/$id');
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _checkRinging();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _sub?.cancel();
     super.dispose();
   }

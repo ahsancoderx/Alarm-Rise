@@ -7,6 +7,8 @@ import '../providers/alarms_provider.dart';
 import '../widgets/reference_photo_picker.dart';
 import '../../../data/models/fitness_exercise.dart';
 import '../widgets/workout_picker.dart';
+import '../../../core/services/tone_catalog.dart';
+import '../widgets/tone_picker_sheet.dart';
 
 class AlarmEditScreen extends ConsumerStatefulWidget {
     final Alarm? alarm;
@@ -44,7 +46,7 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
         ? const TimeOfDay(hour: 7, minute: 0)
         : TimeOfDay(hour: a.hour, minute: a.minute);
     _days = {...?a?.days};
-    _tone = a?.tone ?? alarmTones.first;
+    _tone = a?.tone ?? ToneCatalog.fallbackAsset;
     _vibrate = a?.vibrate ?? true;
     _label = TextEditingController(text: a?.label ?? '');
     _refPhoto = a?.referencePhoto ?? '';
@@ -64,35 +66,16 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
     if (picked != null) setState(() => _time = picked);
   }
 
-  Future<void> _pickTone() async {
+    Future<void> _pickTone() async {
     final picked = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: AppColors.background,
+      isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            for (final t in alarmTones)
-              ListTile(
-                leading: Icon(
-                  Icons.music_note_rounded,
-                  color: t == _tone ? AppColors.orange : AppColors.textSecondary,
-                ),
-                title: Text(t,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                trailing: t == _tone
-                    ? const Icon(Icons.check_rounded, color: AppColors.orange)
-                    : null,
-                onTap: () => Navigator.of(context).pop(t),
-              ),
-          ],
-        ),
-      ),
+      backgroundColor: AppColors.background,
+      builder: (_) => TonePickerSheet(selected: _tone),
     );
     if (picked != null) setState(() => _tone = picked);
   }
-
     void _save() {
     if (_category == AlarmCategory.room && _refPhoto.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -261,7 +244,7 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
                       color: AppColors.orange),
                   title: const Text('Alarm tone',
                       style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(_tone),
+                    subtitle: Text(ToneCatalog.displayName(_tone)),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: _pickTone,
                 ),

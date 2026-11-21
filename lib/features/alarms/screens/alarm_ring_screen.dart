@@ -4,14 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/alarm_scheduler.dart';
+import '../../../core/services/audio_control.dart';
+import '../../../core/services/photo_service.dart';
 import '../../../data/database/database_provider.dart';
 import '../../../data/models/alarm.dart';
 import '../../../data/models/alarm_category.dart';
-import '../../missions/math_mission.dart';
-import '../providers/alarms_provider.dart';
-import '../../../core/services/photo_service.dart';
-import '../../missions/photo_mission.dart';
 import '../../missions/fitness/workout_mission.dart';
+import '../../missions/math_mission.dart';
+import '../../missions/photo_mission.dart';
+import '../providers/alarms_provider.dart';
+
 class AlarmRingScreen extends ConsumerStatefulWidget {
   final int alarmId;
   const AlarmRingScreen({super.key, required this.alarmId});
@@ -22,6 +24,7 @@ class AlarmRingScreen extends ConsumerStatefulWidget {
 
 class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
   Alarm? _alarm;
+  bool _muted = false;
 
   @override
   void initState() {
@@ -40,26 +43,32 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
     setState(() => _alarm = alarmFromRow(row));
   }
 
+  Future<void> _toggleMute() async {
+    final next = !_muted;
+    final ok = await AudioControl.setAlarmVolume(next ? 0.0 : 1.0);
+    if (ok && mounted) setState(() => _muted = next);
+  }
+
   Future<void> _complete() async {
     final a = _alarm!;
-    await plugin.Alarm.stop(a.id);
+    await plugin.Alarm.stop(a.id); // package purani volume khud wapas kar deta hai
     if (a.days.isEmpty) {
-      // Ek baar wala alarm: band kar do
       await ref.read(databaseProvider).setEnabled(a.id, false);
     } else {
-      // Repeat wala alarm: agla din schedule karo
       await AlarmScheduler.schedule(a);
     }
     appRouter.go('/home');
   }
-    Widget _buildMission(Alarm a) {
+
+  Widget _buildMission(Alarm a) {
     switch (a.category) {
       case AlarmCategory.math:
         return MathMission(onSolved: _complete);
       case AlarmCategory.sky:
         return PhotoMission(
           icon: Icons.wb_sunny_rounded,
-          instruction: 'Take a clear photo of the sky. Step outside or go to an open window.',
+          instruction:
+              'Take a clear photo of the sky. Step outside or go to an open window.',
           verify: PhotoService.verifySky,
           onSolved: _complete,
         );
@@ -71,7 +80,7 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
           verify: (path) => PhotoService.verifyRoom(a.referenceLabels, path),
           onSolved: _complete,
         );
-              case AlarmCategory.fitness:
+      case AlarmCategory.fitness:
         return WorkoutMission(
           exercise: a.workout,
           reps: a.reps,
@@ -122,16 +131,27 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        a.label.isNotEmpty ? a.label : a.category.title,
+                        a.label.isNotEmpty ? a.label : a.missionText,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             fontSize: 18, color: AppColors.textSecondary),
                       ),
-                      const SizedBox(height: 28),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: _buildMission(a),
+                      if (a.vibrate)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: TextButton.icon(
+                            onPressed: _toggleMute,
+                            icon: Icon(_muted
+                                ? Icons.volume_up_rounded
+                                : Icons.volume_off_rounded),
+                            label: Text(_muted
+                                ? 'Unmute sound'
+                                : 'Mute sound (vibration stays on)'),
+                          ),
                         ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: SingleChildScrollView(child: _buildMission(a)),
                       ),
                     ],
                   ),
@@ -151,10 +171,8 @@ class _SimpleDismiss extends StatelessWidget {
     return Column(
       children: [
         const SizedBox(height: 40),
-        const Text(
-          'Good morning! Time to rise.',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-        ),
+        const Text('Good morning! Time to rise.',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 40),
         SizedBox(
           width: double.infinity,
