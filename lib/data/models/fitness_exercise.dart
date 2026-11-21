@@ -8,13 +8,13 @@ enum FitnessExercise {
     color: Color(0xFFEF4444),
     accuracy: 'Best accuracy',
     accuracyColor: Color(0xFF16A34A),
-    tip: 'Put the phone 2 m away, to your SIDE, so your whole body is visible side-on.',
-    startPose: 'stand up straight',
+    tip: 'Put the phone 2 m away, in front of you or to your side. '
+        'Your whole body, head to feet, must be visible.',
+    startPose: 'Stand up straight and hold still',
     defaultReps: 10,
-    restIsHigh: true,
-    restAngle: 160, // seedha khara: knee angle isse zyada
-    activeAngle: 110, // neeche: knee angle isse kam
-    minRepMs: 1200,
+    restAt: 0.08, // kamar ki height itni se kam girी = aaram
+    activeAt: 0.22, // itni gir gayi = squat neeche
+    minRepMs: 1000,
   ),
   jumpingJacks(
     title: 'Jumping Jacks',
@@ -23,13 +23,13 @@ enum FitnessExercise {
     color: Color(0xFFDB2777),
     accuracy: 'Good accuracy',
     accuracyColor: Color(0xFF2563EB),
-    tip: 'Put the phone 2 m away, FACING you, so arms and body are visible.',
-    startPose: 'arms down by your sides',
+    tip: 'Put the phone 2 m away, facing you. Raise your arms to shoulder '
+        'height or higher.',
+    startPose: 'Stand with your arms down by your sides',
     defaultReps: 15,
-    restIsHigh: false,
-    restAngle: 45, // bazu neeche: angle isse kam
-    activeAngle: 130, // bazu upar: angle isse zyada
-    minRepMs: 600,
+    restAt: -0.5, // bazu neeche
+    activeAt: 0.15, // bazu kandhe ki height ya us se upar
+    minRepMs: 450,
   ),
   pushUps(
     title: 'Push-ups',
@@ -38,13 +38,13 @@ enum FitnessExercise {
     color: Color(0xFFE5A100),
     accuracy: 'Needs setup',
     accuracyColor: Color(0xFFEA580C),
-    tip: 'Put the phone on the floor, 1.5 to 2 m away, to your SIDE so your whole arm and body show.',
-    startPose: 'arms straight, in plank position',
+    tip: 'Put the phone on the floor, 1.5 to 2 m away, to your SIDE so your '
+        'shoulder and hand are visible.',
+    startPose: 'Hold a plank with straight arms and stay still',
     defaultReps: 8,
-    restIsHigh: true,
-    restAngle: 150,
-    activeAngle: 100,
-    minRepMs: 900,
+    restAt: 0.15,
+    activeAt: 0.40,
+    minRepMs: 800,
   );
 
   final String title;
@@ -57,11 +57,10 @@ enum FitnessExercise {
   final String startPose;
   final int defaultReps;
 
-  /// true: aaram ki haalat mein angle bara (squat, pushup).
-  /// false: aaram ki haalat mein angle chhota (jumping jack).
-  final bool restIsHigh;
-  final double restAngle;
-  final double activeAngle;
+  /// Har exercise ka "progress" (aaram = 0 ke aas paas, active = bara).
+  /// progress <= restAt: aaram. progress >= activeAt: active.
+  final double restAt;
+  final double activeAt;
   final int minRepMs;
 
   const FitnessExercise({
@@ -74,9 +73,8 @@ enum FitnessExercise {
     required this.tip,
     required this.startPose,
     required this.defaultReps,
-    required this.restIsHigh,
-    required this.restAngle,
-    required this.activeAngle,
+    required this.restAt,
+    required this.activeAt,
     required this.minRepMs,
   });
 }
