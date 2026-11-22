@@ -14,6 +14,8 @@ import '../../missions/fitness/workout_mission.dart';
 import '../../missions/math_mission.dart';
 import '../../missions/photo_mission.dart';
 import '../providers/alarms_provider.dart';
+import '../../rewards/providers/rewards_providers.dart';
+import '../../rewards/services/rewards_service.dart';
 
 class AlarmRingScreen extends ConsumerStatefulWidget {
   final int alarmId;
@@ -50,7 +52,7 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
     if (ok && mounted) setState(() => _muted = next);
   }
 
-  Future<void> _complete() async {
+    Future<void> _complete() async {
     final a = _alarm!;
     await plugin.Alarm.stop(a.id); // package purani volume khud wapas kar deta hai
     if (a.days.isEmpty) {
@@ -58,7 +60,14 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
     } else {
       await AlarmScheduler.schedule(a);
     }
-    appRouter.go('/home');
+
+    AwardResult? reward;
+    try {
+      reward = await ref.read(rewardsServiceProvider).awardAlarm(a);
+    } catch (_) {
+      // XP ka masla alarm band hone se na rokay
+    }
+    appRouter.go('/done', extra: reward);
   }
 
   /// Camera wale missions mein header chhota rakhte hain.

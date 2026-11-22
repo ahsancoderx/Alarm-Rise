@@ -6,6 +6,8 @@ import '../../features/alarms/screens/alarm_ring_screen.dart';
 import '../../features/routine/screens/routine_screen.dart';
 import '../../features/rewards/screens/rewards_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/rewards/screens/alarm_done_screen.dart';
+import '../../features/rewards/services/rewards_service.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/home',
@@ -14,6 +16,10 @@ final appRouter = GoRouter(
       path: '/ring/:id',
       builder: (c, s) =>
           AlarmRingScreen(alarmId: int.parse(s.pathParameters['id']!)),
+    ),
+    GoRoute(
+      path: '/done',
+      builder: (c, s) => AlarmDoneScreen(result: s.extra as AwardResult?),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => AppShell(shell: shell),
