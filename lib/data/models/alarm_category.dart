@@ -5,12 +5,8 @@ enum AlarmCategory {
   math('Math Quest', 'Solve to stop', Icons.calculate_rounded, Color(0xFF3B82F6)),
   sky('Sky Photo', 'Capture the sky', Icons.wb_sunny_rounded, Color(0xFF0EA5E9)),
   room('Room Photo', 'Get out of bed', Icons.meeting_room_rounded, Color(0xFF8B5CF6)),
-  quran('Quran Read', 'Start with tilawat', Icons.menu_book_rounded, Color(0xFF16A34A)),
   fitness('Fitness / Gym', 'Move to stop', Icons.fitness_center_rounded, Color(0xFFEF4444)),
-  qr('QR Scan', 'Scan a hidden code', Icons.qr_code_scanner_rounded, Color(0xFF0F766E)),
-  steps('Walk Steps', 'Walk to stop', Icons.directions_walk_rounded, Color(0xFFE5A100)),
-  shake('Shake', 'Shake your phone', Icons.vibration_rounded, Color(0xFFDB2777)),
-  memory('Memory Match', 'Repeat the pattern', Icons.psychology_rounded, Color(0xFF6366F1));
+  face('Eyes & Smile', 'Open eyes, then smile', Icons.sentiment_very_satisfied_rounded, Color(0xFF14B8A6));
 
   final String title;
   final String subtitle;
@@ -20,6 +16,7 @@ enum AlarmCategory {
   const AlarmCategory(this.title, this.subtitle, this.icon, this.color);
 }
 
+/// Purana, ab istemal nahi hota (tones ToneCatalog se aati hain).
 const alarmTones = [
   'Morning Energy',
   'Sunrise Bell',

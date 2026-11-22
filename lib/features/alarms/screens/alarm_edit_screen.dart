@@ -9,6 +9,7 @@ import '../../../data/models/fitness_exercise.dart';
 import '../widgets/workout_picker.dart';
 import '../../../core/services/tone_catalog.dart';
 import '../widgets/tone_picker_sheet.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AlarmEditScreen extends ConsumerStatefulWidget {
     final Alarm? alarm;
@@ -76,12 +77,24 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
     );
     if (picked != null) setState(() => _tone = picked);
   }
-    void _save() {
+      static final _cameraCategories = {
+    AlarmCategory.face,
+    AlarmCategory.fitness,
+    AlarmCategory.sky,
+    AlarmCategory.room,
+  };
+
+  Future<void> _save() async {
     if (_category == AlarmCategory.room && _refPhoto.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Take a reference photo of your spot first')),
+        const SnackBar(
+            content: Text('Take a reference photo of your spot first')),
       );
       return;
+    }
+    if (_cameraCategories.contains(_category)) {
+      await Permission.camera.request(); // subah ke waqt popup na aaye
+      if (!mounted) return;
     }
     final notifier = ref.read(alarmsProvider.notifier);
     notifier.save(Alarm(

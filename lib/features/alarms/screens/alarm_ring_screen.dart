@@ -9,6 +9,7 @@ import '../../../core/services/photo_service.dart';
 import '../../../data/database/database_provider.dart';
 import '../../../data/models/alarm.dart';
 import '../../../data/models/alarm_category.dart';
+import '../../missions/face/face_mission.dart';
 import '../../missions/fitness/workout_mission.dart';
 import '../../missions/math_mission.dart';
 import '../../missions/photo_mission.dart';
@@ -60,6 +61,13 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
     appRouter.go('/home');
   }
 
+  /// Camera wale missions mein header chhota rakhte hain.
+  bool _isCompact(Alarm a) =>
+      a.category == AlarmCategory.fitness ||
+      a.category == AlarmCategory.face ||
+      a.category == AlarmCategory.sky ||
+      a.category == AlarmCategory.room;
+
   Widget _buildMission(Alarm a) {
     switch (a.category) {
       case AlarmCategory.math:
@@ -86,9 +94,98 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
           reps: a.reps,
           onSolved: _complete,
         );
+      case AlarmCategory.face:
+        return FaceMission(onSolved: _complete);
       default:
         return _SimpleDismiss(onDismiss: _complete);
     }
+  }
+
+  Widget _header(Alarm a) {
+    final compact = _isCompact(a);
+
+    final muteButton = a.vibrate
+        ? (compact
+            ? IconButton(
+                onPressed: _toggleMute,
+                tooltip: _muted ? 'Unmute sound' : 'Mute sound',
+                icon: Icon(_muted
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_off_rounded),
+              )
+            : TextButton.icon(
+                onPressed: _toggleMute,
+                icon: Icon(_muted
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_off_rounded),
+                label: Text(_muted
+                    ? 'Unmute sound'
+                    : 'Mute sound (vibration stays on)'),
+              ))
+        : null;
+
+    if (compact) {
+      return Row(
+        children: [
+          Icon(a.category.icon, size: 28, color: a.category.color),
+          const SizedBox(width: 10),
+          Text(a.timeText,
+              style:
+                  const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
+          const SizedBox(width: 4),
+          Text(a.period,
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.orange)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              a.label.isNotEmpty ? a.label : a.missionText,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          ?muteButton,
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 12),
+        Icon(a.category.icon, size: 48, color: a.category.color),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(a.timeText,
+                style: const TextStyle(
+                    fontSize: 64, fontWeight: FontWeight.w800, height: 1)),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(a.period,
+                  style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.orange)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          a.label.isNotEmpty ? a.label : a.missionText,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
+        ),
+        if (muteButton != null)
+          Padding(padding: const EdgeInsets.only(top: 8), child: muteButton),
+        const SizedBox(height: 16),
+      ],
+    );
   }
 
   @override
@@ -102,54 +199,12 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen> {
           child: a == null
               ? const Center(child: CircularProgressIndicator())
               : Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 12),
-                      Icon(a.category.icon, size: 48, color: a.category.color),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(a.timeText,
-                              style: const TextStyle(
-                                  fontSize: 64,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1)),
-                          const SizedBox(width: 8),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(a.period,
-                                style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.orange)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        a.label.isNotEmpty ? a.label : a.missionText,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 18, color: AppColors.textSecondary),
-                      ),
-                      if (a.vibrate)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: TextButton.icon(
-                            onPressed: _toggleMute,
-                            icon: Icon(_muted
-                                ? Icons.volume_up_rounded
-                                : Icons.volume_off_rounded),
-                            label: Text(_muted
-                                ? 'Unmute sound'
-                                : 'Mute sound (vibration stays on)'),
-                          ),
-                        ),
-                      const SizedBox(height: 16),
+                      _header(a),
+                      if (_isCompact(a)) const SizedBox(height: 8),
                       Expanded(
                         child: SingleChildScrollView(child: _buildMission(a)),
                       ),
