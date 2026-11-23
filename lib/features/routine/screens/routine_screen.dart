@@ -25,8 +25,8 @@ class RoutineScreen extends StatelessWidget {
           ),
         ),
         body: const TabBarView(
-          children: [HabitsTab(), FitnessTab()],
-        ),
+  children: [HabitsTab(), FitnessTab(), Center(child: Text('Quran'))],
+),
       ),
     );
   }

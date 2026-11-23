@@ -22,27 +22,30 @@ class HabitsTab extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, HabitView h) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete habit?'),
-        content: Text('"${h.habit.name}" and its history will be removed. '
-            'XP you already earned stays.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete')),
-        ],
-      ),
-    );
-    if (ok == true) {
-      await ref.read(rewardsServiceProvider).deleteHabit(h.habit.id);
-    }
+    BuildContext context, WidgetRef ref, HabitView h) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete habit?'),
+      content: Text('"${h.habit.name}" and its history will be removed. '
+          'XP you already earned stays.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+
+  if (ok == true) {
+    await ref.read(rewardsServiceProvider).deleteHabit(h.habit.id);
   }
+}
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
