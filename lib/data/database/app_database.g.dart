@@ -1835,6 +1835,480 @@ class XpEventsTableCompanion extends UpdateCompanion<XpEventRow> {
   }
 }
 
+class $PrayerLogsTableTable extends PrayerLogsTable
+    with TableInfo<$PrayerLogsTableTable, PrayerLogRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PrayerLogsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+    'day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _prayerMeta = const VerificationMeta('prayer');
+  @override
+  late final GeneratedColumn<String> prayer = GeneratedColumn<String>(
+    'prayer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, day, prayer];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'prayer_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PrayerLogRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('day')) {
+      context.handle(
+        _dayMeta,
+        day.isAcceptableOrUnknown(data['day']!, _dayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    if (data.containsKey('prayer')) {
+      context.handle(
+        _prayerMeta,
+        prayer.isAcceptableOrUnknown(data['prayer']!, _prayerMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_prayerMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {day, prayer},
+  ];
+  @override
+  PrayerLogRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PrayerLogRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      day: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day'],
+      )!,
+      prayer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}prayer'],
+      )!,
+    );
+  }
+
+  @override
+  $PrayerLogsTableTable createAlias(String alias) {
+    return $PrayerLogsTableTable(attachedDatabase, alias);
+  }
+}
+
+class PrayerLogRow extends DataClass implements Insertable<PrayerLogRow> {
+  final int id;
+  final String day;
+  final String prayer;
+  const PrayerLogRow({
+    required this.id,
+    required this.day,
+    required this.prayer,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['day'] = Variable<String>(day);
+    map['prayer'] = Variable<String>(prayer);
+    return map;
+  }
+
+  PrayerLogsTableCompanion toCompanion(bool nullToAbsent) {
+    return PrayerLogsTableCompanion(
+      id: Value(id),
+      day: Value(day),
+      prayer: Value(prayer),
+    );
+  }
+
+  factory PrayerLogRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PrayerLogRow(
+      id: serializer.fromJson<int>(json['id']),
+      day: serializer.fromJson<String>(json['day']),
+      prayer: serializer.fromJson<String>(json['prayer']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'day': serializer.toJson<String>(day),
+      'prayer': serializer.toJson<String>(prayer),
+    };
+  }
+
+  PrayerLogRow copyWith({int? id, String? day, String? prayer}) => PrayerLogRow(
+    id: id ?? this.id,
+    day: day ?? this.day,
+    prayer: prayer ?? this.prayer,
+  );
+  PrayerLogRow copyWithCompanion(PrayerLogsTableCompanion data) {
+    return PrayerLogRow(
+      id: data.id.present ? data.id.value : this.id,
+      day: data.day.present ? data.day.value : this.day,
+      prayer: data.prayer.present ? data.prayer.value : this.prayer,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PrayerLogRow(')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('prayer: $prayer')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, day, prayer);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PrayerLogRow &&
+          other.id == this.id &&
+          other.day == this.day &&
+          other.prayer == this.prayer);
+}
+
+class PrayerLogsTableCompanion extends UpdateCompanion<PrayerLogRow> {
+  final Value<int> id;
+  final Value<String> day;
+  final Value<String> prayer;
+  const PrayerLogsTableCompanion({
+    this.id = const Value.absent(),
+    this.day = const Value.absent(),
+    this.prayer = const Value.absent(),
+  });
+  PrayerLogsTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String day,
+    required String prayer,
+  }) : day = Value(day),
+       prayer = Value(prayer);
+  static Insertable<PrayerLogRow> custom({
+    Expression<int>? id,
+    Expression<String>? day,
+    Expression<String>? prayer,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (day != null) 'day': day,
+      if (prayer != null) 'prayer': prayer,
+    });
+  }
+
+  PrayerLogsTableCompanion copyWith({
+    Value<int>? id,
+    Value<String>? day,
+    Value<String>? prayer,
+  }) {
+    return PrayerLogsTableCompanion(
+      id: id ?? this.id,
+      day: day ?? this.day,
+      prayer: prayer ?? this.prayer,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (prayer.present) {
+      map['prayer'] = Variable<String>(prayer.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PrayerLogsTableCompanion(')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('prayer: $prayer')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SettingsTableTable extends SettingsTable
+    with TableInfo<$SettingsTableTable, SettingRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SettingsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _settingKeyMeta = const VerificationMeta(
+    'settingKey',
+  );
+  @override
+  late final GeneratedColumn<String> settingKey = GeneratedColumn<String>(
+    'setting_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _settingValueMeta = const VerificationMeta(
+    'settingValue',
+  );
+  @override
+  late final GeneratedColumn<String> settingValue = GeneratedColumn<String>(
+    'setting_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [settingKey, settingValue];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SettingRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('setting_key')) {
+      context.handle(
+        _settingKeyMeta,
+        settingKey.isAcceptableOrUnknown(data['setting_key']!, _settingKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_settingKeyMeta);
+    }
+    if (data.containsKey('setting_value')) {
+      context.handle(
+        _settingValueMeta,
+        settingValue.isAcceptableOrUnknown(
+          data['setting_value']!,
+          _settingValueMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_settingValueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {settingKey};
+  @override
+  SettingRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SettingRow(
+      settingKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}setting_key'],
+      )!,
+      settingValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}setting_value'],
+      )!,
+    );
+  }
+
+  @override
+  $SettingsTableTable createAlias(String alias) {
+    return $SettingsTableTable(attachedDatabase, alias);
+  }
+}
+
+class SettingRow extends DataClass implements Insertable<SettingRow> {
+  final String settingKey;
+  final String settingValue;
+  const SettingRow({required this.settingKey, required this.settingValue});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['setting_key'] = Variable<String>(settingKey);
+    map['setting_value'] = Variable<String>(settingValue);
+    return map;
+  }
+
+  SettingsTableCompanion toCompanion(bool nullToAbsent) {
+    return SettingsTableCompanion(
+      settingKey: Value(settingKey),
+      settingValue: Value(settingValue),
+    );
+  }
+
+  factory SettingRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SettingRow(
+      settingKey: serializer.fromJson<String>(json['settingKey']),
+      settingValue: serializer.fromJson<String>(json['settingValue']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'settingKey': serializer.toJson<String>(settingKey),
+      'settingValue': serializer.toJson<String>(settingValue),
+    };
+  }
+
+  SettingRow copyWith({String? settingKey, String? settingValue}) => SettingRow(
+    settingKey: settingKey ?? this.settingKey,
+    settingValue: settingValue ?? this.settingValue,
+  );
+  SettingRow copyWithCompanion(SettingsTableCompanion data) {
+    return SettingRow(
+      settingKey: data.settingKey.present
+          ? data.settingKey.value
+          : this.settingKey,
+      settingValue: data.settingValue.present
+          ? data.settingValue.value
+          : this.settingValue,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingRow(')
+          ..write('settingKey: $settingKey, ')
+          ..write('settingValue: $settingValue')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(settingKey, settingValue);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SettingRow &&
+          other.settingKey == this.settingKey &&
+          other.settingValue == this.settingValue);
+}
+
+class SettingsTableCompanion extends UpdateCompanion<SettingRow> {
+  final Value<String> settingKey;
+  final Value<String> settingValue;
+  final Value<int> rowid;
+  const SettingsTableCompanion({
+    this.settingKey = const Value.absent(),
+    this.settingValue = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SettingsTableCompanion.insert({
+    required String settingKey,
+    required String settingValue,
+    this.rowid = const Value.absent(),
+  }) : settingKey = Value(settingKey),
+       settingValue = Value(settingValue);
+  static Insertable<SettingRow> custom({
+    Expression<String>? settingKey,
+    Expression<String>? settingValue,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (settingKey != null) 'setting_key': settingKey,
+      if (settingValue != null) 'setting_value': settingValue,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SettingsTableCompanion copyWith({
+    Value<String>? settingKey,
+    Value<String>? settingValue,
+    Value<int>? rowid,
+  }) {
+    return SettingsTableCompanion(
+      settingKey: settingKey ?? this.settingKey,
+      settingValue: settingValue ?? this.settingValue,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (settingKey.present) {
+      map['setting_key'] = Variable<String>(settingKey.value);
+    }
+    if (settingValue.present) {
+      map['setting_value'] = Variable<String>(settingValue.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingsTableCompanion(')
+          ..write('settingKey: $settingKey, ')
+          ..write('settingValue: $settingValue, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1842,6 +2316,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HabitsTableTable habitsTable = $HabitsTableTable(this);
   late final $HabitLogsTableTable habitLogsTable = $HabitLogsTableTable(this);
   late final $XpEventsTableTable xpEventsTable = $XpEventsTableTable(this);
+  late final $PrayerLogsTableTable prayerLogsTable = $PrayerLogsTableTable(
+    this,
+  );
+  late final $SettingsTableTable settingsTable = $SettingsTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1851,6 +2329,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     habitsTable,
     habitLogsTable,
     xpEventsTable,
+    prayerLogsTable,
+    settingsTable,
   ];
 }
 
@@ -2851,6 +3331,324 @@ typedef $$XpEventsTableTableProcessedTableManager =
       XpEventRow,
       PrefetchHooks Function()
     >;
+typedef $$PrayerLogsTableTableCreateCompanionBuilder =
+    PrayerLogsTableCompanion Function({
+      Value<int> id,
+      required String day,
+      required String prayer,
+    });
+typedef $$PrayerLogsTableTableUpdateCompanionBuilder =
+    PrayerLogsTableCompanion Function({
+      Value<int> id,
+      Value<String> day,
+      Value<String> prayer,
+    });
+
+class $$PrayerLogsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $PrayerLogsTableTable> {
+  $$PrayerLogsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get prayer => $composableBuilder(
+    column: $table.prayer,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PrayerLogsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $PrayerLogsTableTable> {
+  $$PrayerLogsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get prayer => $composableBuilder(
+    column: $table.prayer,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PrayerLogsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PrayerLogsTableTable> {
+  $$PrayerLogsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  GeneratedColumn<String> get prayer =>
+      $composableBuilder(column: $table.prayer, builder: (column) => column);
+}
+
+class $$PrayerLogsTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PrayerLogsTableTable,
+          PrayerLogRow,
+          $$PrayerLogsTableTableFilterComposer,
+          $$PrayerLogsTableTableOrderingComposer,
+          $$PrayerLogsTableTableAnnotationComposer,
+          $$PrayerLogsTableTableCreateCompanionBuilder,
+          $$PrayerLogsTableTableUpdateCompanionBuilder,
+          (
+            PrayerLogRow,
+            BaseReferences<_$AppDatabase, $PrayerLogsTableTable, PrayerLogRow>,
+          ),
+          PrayerLogRow,
+          PrefetchHooks Function()
+        > {
+  $$PrayerLogsTableTableTableManager(
+    _$AppDatabase db,
+    $PrayerLogsTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PrayerLogsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PrayerLogsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PrayerLogsTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> day = const Value.absent(),
+            Value<String> prayer = const Value.absent(),
+          }) => PrayerLogsTableCompanion(id: id, day: day, prayer: prayer),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String day,
+                required String prayer,
+              }) => PrayerLogsTableCompanion.insert(
+                id: id,
+                day: day,
+                prayer: prayer,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PrayerLogsTableTable, PrayerLogRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PrayerLogsTableTable,
+                    PrayerLogRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PrayerLogsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PrayerLogsTableTable,
+      PrayerLogRow,
+      $$PrayerLogsTableTableFilterComposer,
+      $$PrayerLogsTableTableOrderingComposer,
+      $$PrayerLogsTableTableAnnotationComposer,
+      $$PrayerLogsTableTableCreateCompanionBuilder,
+      $$PrayerLogsTableTableUpdateCompanionBuilder,
+      (
+        PrayerLogRow,
+        BaseReferences<_$AppDatabase, $PrayerLogsTableTable, PrayerLogRow>,
+      ),
+      PrayerLogRow,
+      PrefetchHooks Function()
+    >;
+typedef $$SettingsTableTableCreateCompanionBuilder =
+    SettingsTableCompanion Function({
+      required String settingKey,
+      required String settingValue,
+      Value<int> rowid,
+    });
+typedef $$SettingsTableTableUpdateCompanionBuilder =
+    SettingsTableCompanion Function({
+      Value<String> settingKey,
+      Value<String> settingValue,
+      Value<int> rowid,
+    });
+
+class $$SettingsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTableTable> {
+  $$SettingsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get settingKey => $composableBuilder(
+    column: $table.settingKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get settingValue => $composableBuilder(
+    column: $table.settingValue,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SettingsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTableTable> {
+  $$SettingsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get settingKey => $composableBuilder(
+    column: $table.settingKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get settingValue => $composableBuilder(
+    column: $table.settingValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SettingsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTableTable> {
+  $$SettingsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get settingKey => $composableBuilder(
+    column: $table.settingKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get settingValue => $composableBuilder(
+    column: $table.settingValue,
+    builder: (column) => column,
+  );
+}
+
+class $$SettingsTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SettingsTableTable,
+          SettingRow,
+          $$SettingsTableTableFilterComposer,
+          $$SettingsTableTableOrderingComposer,
+          $$SettingsTableTableAnnotationComposer,
+          $$SettingsTableTableCreateCompanionBuilder,
+          $$SettingsTableTableUpdateCompanionBuilder,
+          (
+            SettingRow,
+            BaseReferences<_$AppDatabase, $SettingsTableTable, SettingRow>,
+          ),
+          SettingRow,
+          PrefetchHooks Function()
+        > {
+  $$SettingsTableTableTableManager(_$AppDatabase db, $SettingsTableTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SettingsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> settingKey = const Value.absent(),
+                Value<String> settingValue = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SettingsTableCompanion(
+                settingKey: settingKey,
+                settingValue: settingValue,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String settingKey,
+                required String settingValue,
+                Value<int> rowid = const Value.absent(),
+              }) => SettingsTableCompanion.insert(
+                settingKey: settingKey,
+                settingValue: settingValue,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SettingsTableTable, SettingRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SettingsTableTable,
+                    SettingRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SettingsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SettingsTableTable,
+      SettingRow,
+      $$SettingsTableTableFilterComposer,
+      $$SettingsTableTableOrderingComposer,
+      $$SettingsTableTableAnnotationComposer,
+      $$SettingsTableTableCreateCompanionBuilder,
+      $$SettingsTableTableUpdateCompanionBuilder,
+      (
+        SettingRow,
+        BaseReferences<_$AppDatabase, $SettingsTableTable, SettingRow>,
+      ),
+      SettingRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2863,4 +3661,8 @@ class $AppDatabaseManager {
       $$HabitLogsTableTableTableManager(_db, _db.habitLogsTable);
   $$XpEventsTableTableTableManager get xpEventsTable =>
       $$XpEventsTableTableTableManager(_db, _db.xpEventsTable);
+  $$PrayerLogsTableTableTableManager get prayerLogsTable =>
+      $$PrayerLogsTableTableTableManager(_db, _db.prayerLogsTable);
+  $$SettingsTableTableTableManager get settingsTable =>
+      $$SettingsTableTableTableManager(_db, _db.settingsTable);
 }

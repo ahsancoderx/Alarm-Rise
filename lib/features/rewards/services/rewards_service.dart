@@ -5,6 +5,7 @@ import '../../../data/database/app_database.dart';
 import '../../../data/models/alarm.dart';
 import '../../../data/models/alarm_category.dart';
 import '../../../data/models/fitness_exercise.dart';
+import '../../prayer/models/prayer.dart';
 
 class AwardResult {
   final int xp;
@@ -124,6 +125,44 @@ class RewardsService {
         ));
       } else {
         await _db.deleteXpByRef(ref);
+      }
+    });
+  }
+    // ---------- Namaz ----------
+
+  /// Namaz tick/untick. Har namaz ka XP, aur paanchon par +20 bonus.
+  Future<void> togglePrayer(Prayer p, String day, bool done) {
+    final ref = 'prayer:$day:${p.name}';
+    final bonusRef = 'prayer-bonus:$day';
+    return _db.transaction(() async {
+      await _db.setPrayerLog(day, p.name, done);
+      if (done) {
+        await _db.insertXp(XpEventsTableCompanion.insert(
+          kind: 'prayer',
+          title: p.title,
+          xp: p.xp,
+          day: day,
+          refKey: ref,
+          coins: Value(p.xp ~/ 10),
+          hour: Value(DateTime.now().hour),
+        ));
+      } else {
+        await _db.deleteXpByRef(ref);
+      }
+
+      final logs = await _db.prayerLogsForDay(day);
+      if (logs.length >= 5) {
+        await _db.insertXp(XpEventsTableCompanion.insert(
+          kind: 'prayer',
+          title: 'All 5 prayers',
+          xp: 20,
+          day: day,
+          refKey: bonusRef,
+          coins: const Value(2),
+          hour: Value(DateTime.now().hour),
+        ));
+      } else {
+        await _db.deleteXpByRef(bonusRef);
       }
     });
   }

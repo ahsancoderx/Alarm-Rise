@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import 'fitness_tab.dart';
 import 'habits_tab.dart';
+import 'namaz_tab.dart';
 
 class RoutineScreen extends StatelessWidget {
   const RoutineScreen({super.key});
@@ -20,13 +21,13 @@ class RoutineScreen extends StatelessWidget {
             tabs: [
               Tab(text: 'Habits'),
               Tab(text: 'Fitness'),
-              Tab(text: 'Quran'),
+              Tab(text: 'Namaz'),
             ],
           ),
         ),
         body: const TabBarView(
-  children: [HabitsTab(), FitnessTab(), Center(child: Text('Quran'))],
-),
+          children: [HabitsTab(), FitnessTab(), NamazTab()],
+        ),
       ),
     );
   }

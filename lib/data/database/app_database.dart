@@ -57,7 +57,7 @@ class XpEventsTable extends Table {
   String get tableName => 'xp_events';
 
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get kind => text()(); // alarm | habit | workout
+  TextColumn get kind => text()(); // alarm | habit | workout | prayer
   TextColumn get title => text()();
   IntColumn get xp => integer()();
   IntColumn get coins => integer().withDefault(const Constant(0))();
@@ -67,14 +67,50 @@ class XpEventsTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+/// Kis din kaun si namaz parhi (tick).
+@DataClassName('PrayerLogRow')
+class PrayerLogsTable extends Table {
+  @override
+  String get tableName => 'prayer_logs';
+
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get day => text()(); // "2026-11-25"
+  TextColumn get prayer => text()(); // fajr | dhuhr | asr | maghrib | isha
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {day, prayer},
+      ];
+}
+
+/// Chhoti settings (location, method, alarm ki tarteeb).
+@DataClassName('SettingRow')
+class SettingsTable extends Table {
+  @override
+  String get tableName => 'app_settings';
+
+  TextColumn get settingKey => text()();
+  TextColumn get settingValue => text()();
+
+  @override
+  Set<Column> get primaryKey => {settingKey};
+}
+
 @DriftDatabase(
-  tables: [AlarmsTable, HabitsTable, HabitLogsTable, XpEventsTable],
+  tables: [
+    AlarmsTable,
+    HabitsTable,
+    HabitLogsTable,
+    XpEventsTable,
+    PrayerLogsTable,
+    SettingsTable,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'risequest'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -96,6 +132,10 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(habitLogsTable);
             await m.createTable(xpEventsTable);
             await _seedHabits();
+          }
+          if (from < 5) {
+            await m.createTable(prayerLogsTable);
+            await m.createTable(settingsTable);
           }
         },
       );
@@ -139,6 +179,28 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteAlarm(int id) =>
       (delete(alarmsTable)..where((t) => t.id.equals(id))).go();
+
+  /// Naya alarm daal kar uski id wapas deta hai (prayer alarms ke liye).
+  Future<int> insertAlarmRow(AlarmsTableCompanion alarm) =>
+      into(alarmsTable).insert(alarm);
+
+  /// Prayer alarm ka agla waqt aur din badalta hai, aur use dobara on karta hai.
+  Future<void> updateAlarmTime(
+    int id,
+    int hour,
+    int minute,
+    String days, {
+    String? category,
+  }) =>
+      (update(alarmsTable)..where((t) => t.id.equals(id))).write(
+        AlarmsTableCompanion(
+          hour: Value(hour),
+          minute: Value(minute),
+          days: Value(days),
+          enabled: const Value(true),
+          category: category == null ? const Value.absent() : Value(category),
+        ),
+      );
 
   // ---------- Habits ----------
 
@@ -189,4 +251,43 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteXpByRef(String refKey) =>
       (delete(xpEventsTable)..where((t) => t.refKey.equals(refKey))).go();
+
+  // ---------- Settings ----------
+
+  Future<Map<String, String>> getSettings() async {
+    final rows = await select(settingsTable).get();
+    return {for (final r in rows) r.settingKey: r.settingValue};
+  }
+
+  Stream<Map<String, String>> watchSettings() =>
+      select(settingsTable).watch().map(
+            (rows) => {for (final r in rows) r.settingKey: r.settingValue},
+          );
+
+  Future<void> setSetting(String key, String value) =>
+      into(settingsTable).insertOnConflictUpdate(
+        SettingsTableCompanion.insert(settingKey: key, settingValue: value),
+      );
+
+  // ---------- Namaz logs ----------
+
+  /// Sirf ek din ke logs (poori history nahi, isliye tez).
+  Stream<List<PrayerLogRow>> watchPrayerLogsForDay(String day) =>
+      (select(prayerLogsTable)..where((t) => t.day.equals(day))).watch();
+
+  Future<List<PrayerLogRow>> prayerLogsForDay(String day) =>
+      (select(prayerLogsTable)..where((t) => t.day.equals(day))).get();
+
+  Future<void> setPrayerLog(String day, String prayer, bool done) async {
+    if (done) {
+      await into(prayerLogsTable).insert(
+        PrayerLogsTableCompanion.insert(day: day, prayer: prayer),
+        mode: InsertMode.insertOrIgnore,
+      );
+    } else {
+      await (delete(prayerLogsTable)
+            ..where((t) => t.day.equals(day) & t.prayer.equals(prayer)))
+          .go();
+    }
+  }
 }

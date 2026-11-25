@@ -10,6 +10,9 @@ import '../../rewards/providers/rewards_providers.dart';
 import '../../routine/providers/habit_providers.dart';
 import '../../routine/widgets/habit_icons.dart';
 import '../providers/clock_provider.dart';
+import '../../prayer/providers/prayer_providers.dart';
+import '../../prayer/widgets/next_prayer_card.dart';
+import '../../prayer/widgets/prayer_alarm_sync.dart';
 
 const _weekdays = [
   'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
@@ -47,6 +50,7 @@ class HomeScreen extends ConsumerWidget {
     final stats = ref.watch(statsProvider);
     final habits = ref.watch(habitViewsProvider);
     final today = ref.watch(todayKeyProvider);
+    final prayersDone = ref.watch(prayersDoneTodayProvider);
 
     // Sab se qareebi alarm
     Alarm? next;
@@ -65,15 +69,17 @@ class HomeScreen extends ConsumerWidget {
     final date =
         '${_weekdays[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}';
 
-    final questsTotal = 1 + habits.length;
-    final questsDone =
-        (stats.alarmToday ? 1 : 0) + habits.where((x) => x.doneOn(today)).length;
+    final questsTotal = 2 + habits.length;
+    final questsDone = (stats.alarmToday ? 1 : 0) +
+        (prayersDone >= 5 ? 1 : 0) +
+        habits.where((x) => x.doneOn(today)).length;
 
     return Scaffold(
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            const PrayerAlarmSync(),
             Text(_greeting(now.hour),
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 16)),
@@ -106,6 +112,8 @@ class HomeScreen extends ConsumerWidget {
               remaining: nextTime?.difference(now),
               onAdd: () => context.go('/alarms'),
             ),
+            const SizedBox(height: 16),
+            const NextPrayerCard(),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -151,6 +159,13 @@ class HomeScreen extends ConsumerWidget {
               done: stats.alarmToday,
               trailing: stats.alarmToday ? null : '',
               onTap: () => context.go('/alarms'),
+            ),
+            _QuestTile(
+              icon: Icons.mosque_rounded,
+              title: 'Pray all 5 prayers  ($prayersDone/5)',
+              done: prayersDone >= 5,
+              trailing: prayersDone >= 5 ? null : '',
+              onTap: () => context.go('/routine'),
             ),
             for (final v in habits)
               _QuestTile(
