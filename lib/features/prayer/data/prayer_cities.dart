@@ -1,4 +1,5 @@
 import '../../../core/utils/prayer_calc.dart';
+import '../models/prayer.dart';
 
 class City {
   final String name;
@@ -81,7 +82,8 @@ PrayerMethod methodForCountry(String cc) {
   }
 }
 
-bool hanafiForCountry(String cc) => cc == 'PK' || cc == 'IN';
+Madhab madhabForCountry(String cc) =>
+    (cc == 'PK' || cc == 'IN') ? Madhab.hanafi : Madhab.shafii;
 
 /// GPS ki location ke sab se qareebi shehar (offline).
 (City, double)? nearestCity(Coords c) {

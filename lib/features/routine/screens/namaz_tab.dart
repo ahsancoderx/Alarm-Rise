@@ -87,8 +87,7 @@ class NamazTab extends ConsumerWidget {
                 const Icon(Icons.location_on_rounded, color: AppColors.orange),
             title: Text(cfg.locationName,
                 style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(
-                '${cfg.method.label}${cfg.hanafi ? '  •  Hanafi Asr' : ''}',
+                        subtitle: Text('${cfg.method.label}  •  ${cfg.madhab.label}',
                 style: const TextStyle(fontSize: 12)),
             trailing: IconButton(
               icon: const Icon(Icons.tune_rounded),
@@ -166,11 +165,13 @@ class NamazTab extends ConsumerWidget {
                       ],
                     ],
                   ),
-                  subtitle: alarmOn
+                 subtitle: alarmOn
                       ? Text(
-                          ac.offset == 0
-                              ? 'Alarm at azan'
-                              : 'Alarm ${ac.offset} min before',
+                          ac.custom
+                              ? 'Alarm at ${fmtClock(DateTime(2000, 1, 1, ac.customHour, ac.customMinute))}'
+                              : (ac.offset == 0
+                                  ? 'Alarm at azan'
+                                  : 'Alarm ${ac.offset} min before'),
                           style: const TextStyle(fontSize: 12))
                       : null,
                   trailing: Row(

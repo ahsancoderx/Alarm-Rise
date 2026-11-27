@@ -29,3 +29,13 @@ extension PrayerInfo on Prayer {
 
   int get xp => this == Prayer.fajr ? 20 : 10;
 }
+
+enum Madhab {
+  hanafi('Hanafi'),
+  shafii("Shafi'i"),
+  maliki('Maliki'),
+  hanbali('Hanbali');
+
+  final String label;
+  const Madhab(this.label);
+}

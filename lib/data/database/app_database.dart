@@ -185,12 +185,14 @@ class AppDatabase extends _$AppDatabase {
       into(alarmsTable).insert(alarm);
 
   /// Prayer alarm ka agla waqt aur din badalta hai, aur use dobara on karta hai.
+    /// Prayer alarm ka agla waqt, din aur tone badalta hai, aur use dobara on karta hai.
   Future<void> updateAlarmTime(
     int id,
     int hour,
     int minute,
     String days, {
     String? category,
+    String? tone,
   }) =>
       (update(alarmsTable)..where((t) => t.id.equals(id))).write(
         AlarmsTableCompanion(
@@ -199,6 +201,7 @@ class AppDatabase extends _$AppDatabase {
           days: Value(days),
           enabled: const Value(true),
           category: category == null ? const Value.absent() : Value(category),
+          tone: tone == null ? const Value.absent() : Value(tone),
         ),
       );
 

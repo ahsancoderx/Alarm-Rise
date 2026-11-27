@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/tone_catalog.dart';
 import '../../../core/utils/prayer_calc.dart';
 import '../../../data/models/alarm_category.dart';
+import '../../alarms/widgets/tone_picker_sheet.dart';
 import '../../prayer/data/prayer_cities.dart';
 import '../../prayer/models/prayer.dart';
 import '../../prayer/providers/prayer_providers.dart';
@@ -20,6 +22,30 @@ void showLocationSheet(BuildContext c) => _sheet(c, const _LocationSheet());
 void showSettingsSheet(BuildContext c) => _sheet(c, const _SettingsSheet());
 void showAlarmSheet(BuildContext c, Prayer p) =>
     _sheet(c, _AlarmSheet(prayer: p));
+
+Widget _chips<T>({
+  required List<T> items,
+  required String Function(T) label,
+  required bool Function(T) selected,
+  required void Function(T) onTap,
+}) {
+  return Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final i in items)
+        ChoiceChip(
+          label: Text(label(i)),
+          selected: selected(i),
+          showCheckmark: false,
+          labelStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: selected(i) ? Colors.white : AppColors.textPrimary),
+          onSelected: (_) => onTap(i),
+        ),
+    ],
+  );
+}
 
 // ---------------- Location ----------------
 
@@ -65,9 +91,8 @@ class _LocationSheetState extends ConsumerState<_LocationSheet> {
   @override
   Widget build(BuildContext context) {
     final q = _q.toLowerCase();
-    final list = prayerCities
-        .where((c) => c.name.toLowerCase().contains(q))
-        .toList();
+    final list =
+        prayerCities.where((c) => c.name.toLowerCase().contains(q)).toList();
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -110,8 +135,7 @@ class _LocationSheetState extends ConsumerState<_LocationSheet> {
                 itemBuilder: (_, i) => ListTile(
                   title: Text(list[i].name),
                   trailing: Text(list[i].cc,
-                      style:
-                          const TextStyle(color: AppColors.textSecondary)),
+                      style: const TextStyle(color: AppColors.textSecondary)),
                   onTap: () => _pick(list[i]),
                 ),
               ),
@@ -143,33 +167,30 @@ class _SettingsSheet extends ConsumerWidget {
           const SizedBox(height: 14),
           const Text('Calculation method',
               style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text('Decides Fajr, Maghrib and Isha.',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final m in PrayerMethod.values)
-                ChoiceChip(
-                  label: Text(m.label),
-                  selected: cfg.method == m,
-                  showCheckmark: false,
-                  labelStyle: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: cfg.method == m
-                          ? Colors.white
-                          : AppColors.textPrimary),
-                  onSelected: (_) => svc.setMethod(m),
-                ),
-            ],
+          _chips<PrayerMethod>(
+            items: PrayerMethod.values,
+            label: (m) => m.label,
+            selected: (m) => cfg.method == m,
+            onTap: svc.setMethod,
           ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Hanafi Asr'),
-            subtitle: const Text('Later Asr time (Pakistan, India)'),
-            value: cfg.hanafi,
-            onChanged: svc.setHanafi,
+          const SizedBox(height: 18),
+          const Text('Madhab (Asr time)',
+              style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            "Only Asr changes. Hanafi is later; Shafi'i, Maliki and Hanbali are the same.",
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
           const SizedBox(height: 8),
+          _chips<Madhab>(
+            items: Madhab.values,
+            label: (m) => m.label,
+            selected: (m) => cfg.madhab == m,
+            onTap: svc.setMadhab,
+          ),
+          const SizedBox(height: 18),
           const Text('Fine tune (minutes)',
               style: TextStyle(fontWeight: FontWeight.w700)),
           const Text('Match your local mosque timetable.',
@@ -213,8 +234,12 @@ class _AlarmSheet extends ConsumerStatefulWidget {
 
 class _AlarmSheetState extends ConsumerState<_AlarmSheet> {
   late bool _on;
+  late bool _custom;
   late int _offset;
+  late int _hour;
+  late int _minute;
   late String _cat;
+  late String _tone;
 
   static const _offsets = [0, 5, 10, 15, 20, 30, 45, 60];
   static const _missions = [
@@ -228,16 +253,48 @@ class _AlarmSheetState extends ConsumerState<_AlarmSheet> {
     super.initState();
     final a = ref.read(prayerConfigProvider).alarm(widget.prayer);
     _on = a.on || a.alarmId == null;
+    _custom = a.custom;
     _offset = a.offset;
+    _hour = a.customHour;
+    _minute = a.customMinute;
     _cat = a.category;
+    _tone = a.tone ?? ToneCatalog.fallbackAsset;
+  }
+
+  Future<void> _pickTime() async {
+    final t = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: _hour, minute: _minute),
+    );
+    if (t != null) {
+      setState(() {
+        _hour = t.hour;
+        _minute = t.minute;
+      });
+    }
+  }
+
+  Future<void> _pickTone() async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: AppColors.background,
+      builder: (_) => TonePickerSheet(selected: _tone),
+    );
+    if (picked != null) setState(() => _tone = picked);
   }
 
   Future<void> _save() async {
     await ref.read(prayerServiceProvider).saveAlarm(
           widget.prayer,
           on: _on,
+          custom: _custom,
           offset: _offset,
+          hour: _hour,
+          minute: _minute,
           category: widget.prayer == Prayer.fajr ? _cat : null,
+          tone: _tone,
         );
     if (mounted) Navigator.of(context).pop();
   }
@@ -247,7 +304,10 @@ class _AlarmSheetState extends ConsumerState<_AlarmSheet> {
     final p = widget.prayer;
     final cfg = ref.watch(prayerConfigProvider);
     final now = DateTime.now();
-    final next = _on ? cfg.nextAlarmTime(p, now, offset: _offset) : null;
+    final next = _on
+        ? cfg.nextAlarmTime(p, now,
+            offset: _offset, custom: _custom, hour: _hour, minute: _minute)
+        : null;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -266,50 +326,65 @@ class _AlarmSheetState extends ConsumerState<_AlarmSheet> {
               onChanged: (v) => setState(() => _on = v),
             ),
             if (_on) ...[
-              const Text('When',
+              const Text('Alarm time',
                   style: TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final o in _offsets)
-                    ChoiceChip(
-                      label: Text(o == 0 ? 'At azan' : '$o min before'),
-                      selected: _offset == o,
-                      showCheckmark: false,
-                      labelStyle: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: _offset == o
-                              ? Colors.white
-                              : AppColors.textPrimary),
-                      onSelected: (_) => setState(() => _offset = o),
-                    ),
-                ],
+              _chips<bool>(
+                items: const [false, true],
+                label: (c) => c ? 'My own time' : 'Before azan',
+                selected: (c) => _custom == c,
+                onTap: (c) => setState(() => _custom = c),
               ),
+              const SizedBox(height: 10),
+              if (_custom)
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: ListTile(
+                    leading: const Icon(Icons.access_time_rounded,
+                        color: AppColors.orange),
+                    title: const Text('Time',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text(
+                        TimeOfDay(hour: _hour, minute: _minute).format(context)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: _pickTime,
+                  ),
+                )
+              else
+                _chips<int>(
+                  items: _offsets,
+                  label: (o) => o == 0 ? 'At azan' : '$o min before',
+                  selected: (o) => _offset == o,
+                  onTap: (o) => setState(() => _offset = o),
+                ),
               if (p == Prayer.fajr) ...[
                 const SizedBox(height: 14),
                 const Text('Wake-up mission',
                     style: TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final m in _missions)
-                      ChoiceChip(
-                        label: Text(m.title),
-                        selected: _cat == m.name,
-                        showCheckmark: false,
-                        labelStyle: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: _cat == m.name
-                                ? Colors.white
-                                : AppColors.textPrimary),
-                        onSelected: (_) => setState(() => _cat = m.name),
-                      ),
-                  ],
+                _chips<AlarmCategory>(
+                  items: _missions,
+                  label: (m) => m.title,
+                  selected: (m) => _cat == m.name,
+                  onTap: (m) => setState(() => _cat = m.name),
                 ),
               ],
+              const SizedBox(height: 14),
+              const Text('Tone',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: const Icon(Icons.music_note_rounded,
+                      color: AppColors.orange),
+                  title: const Text('Alarm tone',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(ToneCatalog.displayName(_tone)),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: _pickTone,
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 next == null
@@ -321,6 +396,7 @@ class _AlarmSheetState extends ConsumerState<_AlarmSheet> {
             const SizedBox(height: 16),
             SizedBox(
               height: 52,
+              width: double.infinity,
               child: FilledButton(
                 onPressed: _save,
                 child: const Text('Save',
